@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Realisateurs;
 use Illuminate\Http\Request;
 
-class RealisateurController extends Controller
+class RealisateursController extends Controller
 {
     public function index()
     {

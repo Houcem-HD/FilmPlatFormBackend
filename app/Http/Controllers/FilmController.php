@@ -4,14 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Film;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class FilmController extends Controller
 {
     public function index()
     {
-        $films = Film::with(['categorie', 'acteurPrincipal', 'acteurSecondaire', 'editeur', 'langue', 'realisateur'])->get();
+        // Fetch all films and return them with full poster URLs
+        $films = Film::all()->map(function ($film) {
+            $film->poster = $film->poster ? url($film->poster) : null;
+            return $film;
+        });
+
         return response()->json($films);
     }
+
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -20,7 +27,7 @@ class FilmController extends Controller
             'date_created' => 'required|integer',
             'duree' => 'required|integer',
             'prix' => 'required|integer',
-            'poster' => 'nullable|file|mimes:jpg,jpeg,png',
+            'poster' => 'nullable|file|mimes:jpg,jpeg,png|max:2048', // Max size: 2MB
             'id_categorie' => 'required|exists:categories,id',
             'id_acteur_principal' => 'required|exists:acteurs,id',
             'id_acteur_secondaire' => 'required|exists:acteurs,id',
@@ -30,22 +37,30 @@ class FilmController extends Controller
         ]);
 
         if ($request->hasFile('poster')) {
-            // Générer un nom de fichier unique
+            // Generate a unique filename and store it in the `public/posters` directory
             $fileName = time() . '_' . $request->file('poster')->getClientOriginalName();
-            // Déplacer le fichier vers le dossier public/posters
             $request->file('poster')->move(public_path('posters'), $fileName);
-            // Stocker le chemin relatif du fichier dans la base de données
-            $validated['poster'] = 'posters/' . $fileName;
+            $validatedData['poster'] = 'posters/' . $fileName; // Save the relative path
         }
 
         $film = Film::create($validatedData);
+
+        // Add full URL to the poster in the response
+        $film->poster = $film->poster ? url($film->poster) : null;
+
         return response()->json($film, 201);
     }
+
     public function show($id)
     {
-        $el = Film::find($id);
-        return response()->json($el);
+        $film = Film::findOrFail($id);
+
+        // Add full URL to the poster
+        $film->poster = $film->poster ? url($film->poster) : null;
+
+        return response()->json($film);
     }
+
     public function update(Request $request, $id)
     {
         $validatedData = $request->validate([
@@ -54,7 +69,7 @@ class FilmController extends Controller
             'date_created' => 'required|integer',
             'duree' => 'required|integer',
             'prix' => 'required|integer',
-            'poster' => 'nullable|string',
+            'poster' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
             'id_categorie' => 'required|exists:categories,id',
             'id_acteur_principal' => 'required|exists:acteurs,id',
             'id_acteur_secondaire' => 'required|exists:acteurs,id',
@@ -63,23 +78,39 @@ class FilmController extends Controller
             'id_realisateur' => 'required|exists:realisateurs,id',
         ]);
 
+        $film = Film::findOrFail($id);
+
         if ($request->hasFile('poster')) {
-            $posterFile = $request->file('poster');
-            $posterFileName = time() . '_' . $posterFile->getClientOriginalName();
-            $posterFile->move(public_path('posters'), $posterFileName);
-            $validated['poster'] = 'posters/' . $posterFileName;
+            // Delete the old poster if it exists
+            if ($film->poster && file_exists(public_path($film->poster))) {
+                unlink(public_path($film->poster));
+            }
+
+            // Upload the new poster
+            $fileName = time() . '_' . $request->file('poster')->getClientOriginalName();
+            $request->file('poster')->move(public_path('posters'), $fileName);
+            $validatedData['poster'] = 'posters/' . $fileName; // Save the relative path
         }
 
-        $film = Film::find($id);
-        
         $film->update($validatedData);
-        $film->refresh();
+
+        // Add full URL to the poster in the response
+        $film->poster = $film->poster ? url($film->poster) : null;
+
         return response()->json($film);
     }
+
     public function destroy($id)
     {
-        $film = Film::find($id);
+        $film = Film::findOrFail($id);
+
+        // Delete the poster file if it exists
+        if ($film->poster && file_exists(public_path($film->poster))) {
+            unlink(public_path($film->poster));
+        }
+
         $film->delete();
+
         return response()->json(null, 204);
     }
 }

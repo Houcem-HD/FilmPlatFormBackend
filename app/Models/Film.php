@@ -21,6 +21,7 @@ class Film extends Model
         'date_created',
         'duree',
         'prix',
+        'poster',
         'id_categorie',
         'id_acteur_principal',
         'id_acteur_secondaire',
@@ -45,7 +46,7 @@ class Film extends Model
      */
     public function categorie()
     {
-        return $this->belongsTo(Category::class, 'id_categorie', 'id');
+        return $this->belongsTo(Categorie::class, 'id_categorie', 'id');
     }
 
     public function acteurPrincipal()

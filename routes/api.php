@@ -3,7 +3,9 @@
 use App\Http\Controllers\ActeurController;
 use App\Http\Controllers\CategorieController;
 use App\Http\Controllers\EditeurController;
+use App\Http\Controllers\FilmController;
 use App\Http\Controllers\LangueController;
+use App\Http\Controllers\RealisateursController;
 use App\Http\Controllers\userController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -55,15 +57,15 @@ Route::put('/langue/{id}', [LangueController::class, 'update']);
 Route::delete('/langue/{id}', [LangueController::class, 'destroy']);
 
 // crud film
-Route::get('/film', [\App\Http\Controllers\FilmController::class, 'index']);
-Route::post('/film', [\App\Http\Controllers\FilmController::class, 'store']);
-Route::get('/film/{id}', [\App\Http\Controllers\FilmController::class, 'show']);
-Route::put('/film/{id}', [\App\Http\Controllers\FilmController::class, 'update']);
-Route::delete('/film/{id}', [\App\Http\Controllers\FilmController::class, 'destroy']);
+Route::get('/film', [FilmController::class, 'index']);
+Route::post('/film', [FilmController::class, 'store']);
+Route::get('/film/{id}', [FilmController::class, 'show']);
+Route::put('/film/{id}', [FilmController::class, 'update']);
+Route::delete('/film/{id}', [FilmController::class, 'destroy']);
 
 // crud realisateur
-Route::get('/realisateur', [\App\Http\Controllers\RealisateurController::class, 'index']);
-Route::post('/realisateur', [\App\Http\Controllers\RealisateurController::class, 'store']);
-Route::get('/realisateur/{id}', [\App\Http\Controllers\RealisateurController::class, 'show']);
-Route::put('/realisateur/{id}', [\App\Http\Controllers\RealisateurController::class, 'update']);
-Route::delete('/realisateur/{id}', [\App\Http\Controllers\RealisateurController::class, 'destroy']);
+Route::get('/realisateur', [RealisateursController::class, 'index']);
+Route::post('/realisateur', [RealisateursController::class, 'store']);
+Route::get('/realisateur/{id}', [RealisateursController::class, 'show']);
+Route::put('/realisateur/{id}', [RealisateursController::class, 'update']);
+Route::delete('/realisateur/{id}', [RealisateursController::class, 'destroy']);
